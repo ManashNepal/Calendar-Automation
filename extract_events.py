@@ -35,7 +35,7 @@ def get_google_calendar_events(state):
     try:
         service = build(serviceName="calendar", version="v3", credentials=creds) # connecting to Google Calendar
 
-        now = datetime.datetime.utcnow().isoformat() + "Z" # fetching current time and Z indicates UTC timee
+        now = datetime.datetime.utcnow().isoformat() + "Z"  # fetching current time and Z indicates UTC timee
 
         events_result = service.events().list(
             calendarId = "primary", 
