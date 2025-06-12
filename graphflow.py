@@ -22,7 +22,7 @@ class MyState(TypedDict):
     todays_events : Optional[List[Event]]
     todays_tasks : Optional[List[Task]]
     summarized_task : Optional[str]
-    birthday_mail : Optional[str]
+    is_birthday_email_sent : Optional[bool]
 
 def routing_function(state):
     pass
@@ -50,6 +50,3 @@ print(result)
 
 print("\n\n---------------------")
 print(result["summarized_task"])
-
-print("\n\n----------------------")
-print(result["birthday_mail"])

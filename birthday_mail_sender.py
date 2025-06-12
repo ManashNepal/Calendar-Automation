@@ -1,5 +1,10 @@
 from groq import Groq 
 import os 
+from utils import parse_body, parse_subject
+from dotenv import load_dotenv
+import yagmail
+
+load_dotenv()
 
 def send_birthday_mail(state):
     todays_events = state["todays_events"]
@@ -40,6 +45,14 @@ def send_birthday_mail(state):
         ]
     )
 
-    state["birthday_mail"] = response.choices[0].message.content
+    generated_email = response.choices[0].message.content
+
+    email_subject = parse_subject(generated_email)
+    email_body = parse_body(generated_email)
+
+    yag = yagmail.SMTP(user = os.getenv("SENDER_EMAIL"), password=os.getenv("APP_PASSWORD"))
+    yag.send(to=os.getenv("RECEIVER_EMAIL"), subject=email_subject, contents=email_body)
+
+    state["is_birthday_email_sent"] = True 
 
     return state
