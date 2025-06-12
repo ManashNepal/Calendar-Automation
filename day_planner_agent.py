@@ -39,7 +39,7 @@ def plan_the_day(state):
     - Fixed-time events must be scheduled exactly as given.
     - Flexible tasks should be placed around the events without overlap.
     - Use notes and due time to determine task priority and time required.
-    - **Ignore any birthday events or all-day entries** unless they're crucial to planning.
+    - **Ignore any birthday events or all-day entries** unless they're crucial to planning without mentioning in the output.
     - Add buffer time, short breaks, meals, and sleep to create a balanced day.
     - If events conflict, try to minimize overlap and explain it briefly in the summary.
 

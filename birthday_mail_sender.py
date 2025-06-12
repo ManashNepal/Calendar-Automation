@@ -2,7 +2,6 @@ from groq import Groq
 import os 
 from utils import parse_body, parse_subject
 from dotenv import load_dotenv
-import yagmail
 
 load_dotenv()
 
@@ -45,14 +44,30 @@ def send_birthday_mail(state):
         ]
     )
 
+    system_prompt2 = """
+    You are a helpful assistant that detects birthday events and responds with a short message: "It's [Name]'s Birthday!" using the given event string.
+
+    - Only respond in the format: It's [Name]'s Birthday!
+    - Do not add any extra information.
+    - Extract only the name that appears before the word "Birthday".
+    """
+
+    response2 = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role" : "system", "content" : system_prompt2},
+            {"role" : "user", "content" : user_prompt}
+        ]
+    )
+
+    state["birthday_message"] = response2.choices[0].message.content
+
     generated_email = response.choices[0].message.content
 
     email_subject = parse_subject(generated_email)
     email_body = parse_body(generated_email)
 
-    yag = yagmail.SMTP(user = os.getenv("SENDER_EMAIL"), password=os.getenv("APP_PASSWORD"))
-    yag.send(to=os.getenv("RECEIVER_EMAIL"), subject=email_subject, contents=email_body)
-
-    state["is_birthday_email_sent"] = True 
+    state["email_subject"] = email_subject
+    state["email_body"] = email_body
 
     return state

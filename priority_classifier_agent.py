@@ -15,20 +15,25 @@ def classify_priorities(state):
         combined_list.append(f"Type : Task\nTitle : {task['title']}\nNotes : {task['notes']}")
     
     system_prompt = """
-    You are a smart assistant that classifies each calendar item (tasks and events) into one of three priority levels: High, Medium, or Low.
+    You are a smart assistant that classifies each calendar item (Task or Event) into one of three priority levels: High, Medium, or Low.
 
     Use the following criteria:
     - High Priority: Time-sensitive or very important (e.g., due today, scheduled meetings, project deadlines)
     - Medium Priority: Important but not urgent (e.g., long-term goals, study sessions)
-    - Low Priority: Optional or casual (e.g., leisure activities, birthdays)
+    - Low Priority: Optional or casual (e.g., leisure activities)
 
-    For each item, return a structured and readable explanation with:
-    - Title
-    - Type (Task or Event)
-    - Priority (High / Medium / Low)
-    - Reason for classification
+    **Important:** Completely ignore any calendar item that includes the word "Birthday" in the title. Do not mention or classify those items in your output.
 
-    Do not summarize all items together. Give each one a clear block with line breaks.
+    For each remaining item, return it in **Markdown format** using **bold labels** and **line breaks**, like this: Include title, description, priority and reason for priority evertime in the output like:
+
+    **Title:** Sample Title\n
+    **Description:** Description of Activity\n   
+    **Priority:** High\n
+    **Reason for Priority:** Brief explanation  
+
+    Separate each item with a horizontal line (`---`) and ensure line breaks between each label using `\n` or double spaces after each line. Do **not** combine multiple labels in one line.
+
+    Return only the formatted blocks for non-birthday items. Do not include any summary or explanation.
     """
 
     user_prompt = "Classify the following calendar items:\n\n" + "\n\n".join(combined_list)

@@ -24,7 +24,9 @@ class MyState(TypedDict):
     todays_events : Optional[List[Event]]
     todays_tasks : Optional[List[Task]]
     day_plan : Optional[str]
-    is_birthday_email_sent : Optional[bool]
+    email_subject : Optional[str]
+    email_body : Optional[str]
+    birthday_message : Optional[str]
     priorities_classification : Optional[str]
     conflict_assessment : Optional[str]
 
@@ -50,15 +52,5 @@ builder.add_edge("Conflict_Assessment", END)
 
 graph = builder.compile()
 
-state = {}
 
-result = graph.invoke(state)
 
-print(result)
-
-# print("\n\n---------------------")
-# print(result["summarized_task"])
-# print("\n\n---------------------")
-# print(result["priorities_classification"])
-print("\n\n---------------------")
-print(result["day_plan"])
