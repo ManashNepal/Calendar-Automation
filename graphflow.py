@@ -7,6 +7,7 @@ from day_planner_agent import plan_the_day
 from birthday_mail_sender import send_birthday_mail
 from priority_classifier_agent import classify_priorities
 from event_conflict_agent import assess_conflict
+from to_do_planner import generate_to_do
 
 class Event(TypedDict):
     title : str
@@ -29,6 +30,7 @@ class MyState(TypedDict):
     birthday_message : Optional[str]
     priorities_classification : Optional[str]
     conflict_assessment : Optional[str]
+    to_do : Optional[str]
 
 def routing_function(state):
     pass
@@ -41,6 +43,7 @@ builder.add_node("Planning_Day", RunnableLambda(plan_the_day))
 builder.add_node("Birthday_Mail", RunnableLambda(send_birthday_mail))
 builder.add_node("Activities_Priority", RunnableLambda(classify_priorities))
 builder.add_node("Conflict_Assessment", RunnableLambda(assess_conflict))
+builder.add_node("To_Do_Planner", RunnableLambda(generate_to_do))
 
 builder.add_edge(START, "Extract_Event")
 builder.add_edge("Extract_Event", "Extract_Task")
@@ -48,7 +51,8 @@ builder.add_edge("Extract_Task", "Planning_Day")
 builder.add_edge("Planning_Day", "Birthday_Mail")
 builder.add_edge("Birthday_Mail", "Activities_Priority")
 builder.add_edge("Activities_Priority", "Conflict_Assessment")
-builder.add_edge("Conflict_Assessment", END)
+builder.add_edge("Conflict_Assessment", "To_Do_Planner")
+builder.add_edge("To_Do_Planner", END)
 
 graph = builder.compile()
 

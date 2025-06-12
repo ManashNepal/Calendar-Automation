@@ -6,7 +6,7 @@ import os
 
 st.set_page_config(page_title="CalAutomation", page_icon=":date:")
 
-st.header("Automate Google Calendar :calendar:")
+st.header("Automate with Google Calendar :calendar:")
 
 st.subheader("Process your Calendar before!")
 
@@ -24,7 +24,8 @@ user_choice = st.selectbox(label="Pick a service!", options=[
     "Plan the Full Day", 
     "Send Birthday Mails",
     "Prioritize Task",
-    "Assess Conflict"
+    "Assess Conflict",
+    "Generate TO-DOs"
 ])
 
 #Whole Day Planner
@@ -65,4 +66,9 @@ elif user_choice == "Assess Conflict":
     st.subheader("Do you want to assess conflict in events?")
     if st.button(label="Yes", key="yes_button_3"):
          st.write(st.session_state.result["conflict_assessment"])
+
+elif user_choice == "Generate TO-DOs":
+     st.subheader("Do you want to generate To-Dos for today?")
+     if st.button(label="Yes", key="yes_button_4"):
+         st.write(st.session_state.result["to_do"])
 
