@@ -26,16 +26,13 @@ def classify_priorities():
 
     **Important:** Completely ignore any calendar item that includes the word "Birthday" in the title. Do not mention or classify those items in your output.
 
-    For each remaining item, return it in **Markdown format** using **bold labels** and **line breaks**, like this: Include title, description, priority and reason for priority evertime in the output like:
+    For each remaining item, return the result as a Markdown table with the following columns:
 
-    **Title:** Sample Title\n
-    **Description:** Description of Activity\n   
-    **Priority:** High\n
-    **Reason for Priority:** Brief explanation  
+    | Title | Description | Priority | Reason for Priority |
 
-    Separate each item with a horizontal line (`---`) and ensure line breaks between each label using `\n` or double spaces after each line. Do **not** combine multiple labels in one line.
-
-    Return only the formatted blocks for non-birthday items. Do not include any summary or explanation.
+    - Return only the table (no explanation, no headers beyond the table)
+    - Every row should correspond to a non-birthday calendar item
+    - Do not include blank rows or irrelevant content  
     """
 
     user_prompt = "Classify the following calendar items:\n\n" + "\n\n".join(combined_list)
