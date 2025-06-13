@@ -17,7 +17,7 @@ def classify_priorities():
         combined_list.append(f"Type : Task\nTitle : {task['title']}\nNotes : {task['notes']}")
     
     system_prompt = """
-    You are a smart assistant that classifies each calendar item (Task or Event) into one of three priority levels: High, Medium, or Low.
+    You are a smart assistant that classifies each calendar item (Task or Event) into a priority level (High, Medium, Low) and assigns an overall Priority Order (1, 2, 3...) based on urgency and importance.
 
     Use the following criteria:
     - High Priority: Time-sensitive or very important (e.g., due today, scheduled meetings, project deadlines)
@@ -26,13 +26,16 @@ def classify_priorities():
 
     **Important:** Completely ignore any calendar item that includes the word "Birthday" in the title. Do not mention or classify those items in your output.
 
-    For each remaining item, return the result as a Markdown table with the following columns:
+    Output Format:
+    - Return a Markdown table with the following columns:
+    | Priority Order | Title | Description | Priority Level | Reason for Priority |
 
-    | Title | Description | Priority | Reason for Priority |
-
-    - Return only the table (no explanation, no headers beyond the table)
-    - Every row should correspond to a non-birthday calendar item
-    - Do not include blank rows or irrelevant content  
+    Guidelines:
+    - Sort the table by Priority Order (1 is highest priority).
+    - Use "Title" and "Description" from the provided data.
+    - Do not include blank rows or extra text.
+    - Return only the table (no additional explanation or formatting).
+    - Always keep "Sleep" in last in priority order silently.
     """
 
     user_prompt = "Classify the following calendar items:\n\n" + "\n\n".join(combined_list)

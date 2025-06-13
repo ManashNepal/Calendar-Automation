@@ -45,9 +45,10 @@ def plan_the_day():
     - Fixed-time events must be scheduled exactly as given.
     - Flexible tasks should be placed around the events without overlap.
     - Use notes and due time to determine task priority and time required.
-    - **Ignore any birthday events or all-day entries** unless they're crucial to planning without mentioning in the output.
+    - Ignore any events related to birthdays. If the event title or description contains the word "birthday" (case-insensitive), exclude it entirely from your analysis. Focus only on the remaining events.
     - Add buffer time, short breaks, meals, and sleep to create a balanced day.
     - If events conflict, try to minimize overlap and explain it briefly in the summary.
+    - Do not include any analysis, explanation, or reasoning—just return the final output as specified.
 
     **Output Format:**
     - Start with a clean **Markdown table**.
@@ -83,7 +84,7 @@ def plan_the_day():
         ]
     )
 
-    st.write(response.choices[0].message.content) 
+    return response.choices[0].message.content
 
 
         

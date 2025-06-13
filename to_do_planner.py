@@ -3,47 +3,73 @@ import os
 from dotenv import load_dotenv 
 import streamlit as st
 from extract_tasks import get_google_tasks
+from extract_events import get_google_calendar_events
 
 load_dotenv()
 
 def generate_to_do():
     combined_list = []
 
+    events = get_google_calendar_events()
     tasks = get_google_tasks()
 
+    for event in events:
+        combined_list.append(f"Title : {event['title']}\nStart Time : {event['start_time']}\nEnd Time : {event['end_time']}\nDescription : {event['description']}")
+    
     for task in tasks:
         combined_list.append(f"Title : {task['title']}\nStatus : {task['status']}\nDue Time : {task['due']}\nNotes : {task['notes']}")
 
     system_prompt = """
-    You are a helpful and intelligent task management assistant.
+    
+    You are a smart assistant that creates a clear, actionable daily to-do list using the user's incomplete tasks and upcoming calendar events for today.
 
-    Your role is to help users stay organized and productive by reviewing their current tasks and generating a concise, actionable daily to-do list. You will:
+    Instructions:
+    - Include only:
+        1. Incomplete tasks
+        2. Today'ss upcoming calendar events
+    - For each entry, include:
+        1. Title
+        2. Scheduled Time
+        3. Category (e.g., Work, Study, Personal, Health)
+        4. Notes (if available)
+    - Use a friendly, action-oriented tone.
+    - Ignore any event with "birthday" in the title or description (case-insensitive).
 
-    - Analyze the user's current task list, including each task's title, status (completed/incomplete), due time, and notes.
-    - Focus only on tasks that are not marked as completed.
-    - Sort tasks in order of urgency, based on due time.
-    - Summarize each task clearly and concisely using its title and notes.
-    - If multiple tasks are due around the same time, list them in the order they appear.
-    - Keep the tone friendly, but action-oriented to encourage productivity.
+    Time Formatting:
+    - For Tasks, format the Scheduled Time as:  
+    Due: Month Day, Year, HH:MM AM/PM  
+    Example: "Due: June 14, 2025, 5:00 PM"
 
-    Formatting Instructions:
-    - Use bullet points for each to-do item, with each bullet point starting on a new line.
-    - Start each task line with a verb (e.g., "Complete", "Review", "Submit", etc.).
-    - Include the due time at the end in parentheses, with no extra parentheses.
-    - Ensure that each bullet point is separated by a newline (i.e., \n).
-    - If there are no pending tasks, simply say: “You have completed all your tasks. Great job!”
+    - For Events, format the Scheduled Time as:  
+    Month Day, Year, Start Time - End Time  
+    Example: "June 14, 2025, 3:00 PM - 4:30 PM"
 
-    **Follow the below Example Output. Use AM/PM format and not ISO format**
+    Output Format:
+    - Always begin with the line:  
+    "Here is your TO-DO list for today:"
 
-    Example output:
-    • Complete the project report and send it to the manager (Due: June 12, 2025, 5:00 PM)\n
-    • Review the quarterly budget spreadsheet (Due: June 13, 2025, 12:00 PM)\n
-    • Submit the team feedback survey (Due: June 14, 2025, 9:00 AM)
+    - Present the list as a **markdown table** everytime with the following columns:  
+    | Task | Scheduled Time | Category | Notes |
 
-    Do not mention any changes you made in the output.
+    - If there are no items to show, return only:  
+    “You have completed all your tasks. Great job!”
+
+    Example Output:
+
+    Here is your TO-DO list for today:
+
+    | Task                                   | Scheduled Time                     | Category | Notes                            |
+    |----------------------------------------|------------------------------------|----------|----------------------------------|
+    | Submit the final report for AI module  | Due: June 12, 2025, 5:00 PM        | Work     | Remember to include latest data |
+    | Team sync-up meeting                   | June 12, 2025, 3:00 PM - 4:00 PM   | Work     | Discuss project progress         |
+
+    After the table, include a short 2-3 line motivational message encouraging the user to stay focused and productive. Keep it positive and supportive.
+
+    Do not include any explanations, markdown syntax, or reasoning — only return the formatted table and motivational message.
+
     """
 
-    user_prompt = "Here is the list of my tasks for today:\n\n" + "\n\n".join(combined_list)
+    user_prompt = "Here is the list of my tasks and events for today:\n\n" + "\n\n".join(combined_list)
 
     client = Groq(
         api_key=os.getenv("GROQ_API_KEY")

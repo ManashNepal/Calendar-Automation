@@ -4,11 +4,13 @@ from utils import parse_body, parse_subject
 from dotenv import load_dotenv
 from extract_events import get_google_calendar_events
 import streamlit as st
-import yagmail
 
 load_dotenv()
 
 def send_birthday_mail():
+
+    return_dict = {}
+
     todays_events = get_google_calendar_events()
     birthday_event = ""
     for event in todays_events:
@@ -16,9 +18,40 @@ def send_birthday_mail():
             if "birthday" in value.lower():
                 birthday_event = value
 
-    #Send Mail
+    #CLIENT
     client = Groq(
         api_key=os.getenv("GROQ_API_KEY")
+    )
+
+    if "show_mail_editor" not in st.session_state:
+        st.session_state.show_mail_editor = False 
+
+    if "response" not in st.session_state:
+        st.session_state.response = None
+    
+    if "birthday_message" not in st.session_state:
+        st.session_state.birthday_message = ""
+
+    user_prompt = f"Event : {birthday_event}"
+
+
+    detect_birthday_prompt = """
+    You are a helpful assistant that detects birthday events and responds with a short message.
+
+    - If the event string contains a birthday, respond only in the format: "It's [Name]'s Birthday!". The name should be in Title case.
+    - Extract only the name that appears immediately before the word "Birthday".
+    - If there is no birthday mentioned in the event string, respond with: "No Birthday"
+    - Do not add any extra information or explanation.
+    """
+
+
+    # respond It's [Name] Birthday -> "No Birthday" 
+    detect_birthday_response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role" : "system", "content" : detect_birthday_prompt},
+            {"role" : "user", "content" : user_prompt}
+        ]
     )
 
     system_prompt = """
@@ -34,62 +67,28 @@ def send_birthday_mail():
     - Do not mention that the email was generated from an event or AI.
     - Extract the person's name from the phrase (e.g., from "Dikesh Birthday", infer "Dikesh").
     """
-
-    user_prompt = f"Event : {birthday_event}"
-
-    response = client.chat.completions.create(
+    st.session_state.response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
             {"role" : "system", "content" : system_prompt},
             {"role" : "user", "content" : user_prompt}
         ]
     )
+    # respond the generated mail
+    generated_email = st.session_state.response.choices[0].message.content
 
-    system_prompt2 = """
-    You are a helpful assistant that detects birthday events and responds with a short message.
+    email_subject = parse_subject(generated_email)
+    email_body = parse_body(generated_email)
 
-    - If the event string contains a birthday, respond only in the format: "It's [Name]'s Birthday!"
-    - Extract only the name that appears immediately before the word "Birthday".
-    - If there is no birthday mentioned in the event string, respond with: "No Birthday"
-    - Do not add any extra information or explanation.
-    """
+    return_dict["email_subject"] = email_subject
+    return_dict["email_body"] = email_body
 
-    # respond It's [Name] Birthday
-    response2 = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role" : "system", "content" : system_prompt2},
-            {"role" : "user", "content" : user_prompt}
-        ]
-    )
+    birthday_message = detect_birthday_response.choices[0].message.content
+    return_dict["birthday_message"] = birthday_message
 
-    birthday_message = response2.choices[0].message.content
+    return return_dict
 
-    if "No Birthday" in birthday_message:
-        st.subheader("Noone has Birthday today!")
+    
 
-    else:
-        st.write(birthday_message)
-        # respond generated email
-        generated_email = response.choices[0].message.content
-
-        email_subject = parse_subject(generated_email)
-        email_body = parse_body(generated_email)
-
-        st.write("Do you want to send the birthday mail?")
-        
-        if st.button("Yes", key="yes_button"):
-            st.session_state.show_mail_editor = True 
-        
-        if "show_mail_editor" not in st.session_state:
-            st.session_state.show_mail_editor = False 
-        
-        if st.session_state.show_mail_editor:
-            st.session_state.mail = st.text_area(label= "Make changes if you have to!",value=email_body, height = 500)
-            receiver_mail = st.text_input("Enter receiver email address")
-            if st.button(label="SEND", key="send_button"):
-                with st.spinner("Sending"):
-                    yag = yagmail.SMTP(user = os.getenv("SENDER_EMAIL"), password=os.getenv("APP_PASSWORD"))
-                    yag.send(to=receiver_mail, subject=email_subject, contents=email_body)
-                    st.success("Email Sent Successfully!")
-        st.session_state.show_mail_editor = False
+    
+      

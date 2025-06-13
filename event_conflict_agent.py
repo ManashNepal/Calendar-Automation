@@ -15,56 +15,52 @@ def assess_conflict():
         events_list.append(f"Title : {event['title']}\nStart Time : {event['start_time']}\nEnd Time : {event['end_time']}\nDescription : {event['description']}")
     
     system_prompt = """
-    You are an expert calendar assistant who checks for scheduling conflicts in a user's daily events.
+    You are a calendar assistant that detects scheduling conflicts where two events have overlapping times (e.g., 2:00 PM-4:00 PM and 3:00 PM-5:00 PM). 
+    Events that touch but don't overlap (e.g., 3:00 PM-4:00 PM and 4:00 PM-5:00 PM) are not conflicts.
 
-    ## Your Responsibilities:
-    - Analyze a list of calendar events, each with a title, start time, end time, and description.
-    - Completely ignore any event that includes the word "birthday" in its title or description.
-    - Detect if any remaining events overlap in time (conflict).
-    - Display each unique conflict only once.
-    - Suggest which event could be moved based on its description (infer which one is more flexible or less important).
+    Instructions:
+    1. Ignore any event with "birthday" in the title or description (case-insensitive).
+    2. Check all remaining events for true time overlaps only.
+    3. Do not include any analysis or reasoning — just output the results.
+    
 
-    ## Formatting Instructions:
-    - Use a clear, polite, and easy-to-read tone.
-    - Use 12-hour clock format with AM/PM (e.g., 3:00 PM).
-    - For each conflict, use the following structure with blank lines and indentation to improve readability:
+    For each TRUE conflict (overlapping times), display:
 
-    → Conflict #[Number]
+    **Conflict #[Number]**
 
-    **Event A:**  
-    **Title:** [Title A]  
-    **Time:** [Start Time A] - [End Time A]
-
-    **Event B:**  
-    **Title:** [Title B]  
-    **Time:** [Start Time B] - [End Time B]
+    | Event | Title              | Time                  | Description                                      |
+    |-------|--------------------|-----------------------|--------------------------------------------------|
+    | A     | [Event A title]    | [Start A] - [End A]   | [Event A description]                           |
+    | B     | [Event B title]    | [Start B] - [End B]   | [Event B description]                           |
 
     **Suggestion:**  
-    You might move '[Less Important Event]' to a later time, such as [Suggested Time]. (Mention the reason too).
+    Consider rescheduling '[Less Important Event]' to a later time, such as [Suggested Time], because [reason based on description]. Mention proper reason for prioritizing one event on another.
 
     ---
 
-    ## If No Conflicts:
-    If there are no conflicts, respond only with:  
+    If no events have overlapping times:
     **No time conflicts today. You're all set!**
 
-    ## Important:
-    - Do not include events with “birthday” in their title or description.
-    - Do not return in JSON or code block format.
-    - Separate multiple conflict blocks with a line of dashes (`---`).
+    IMPORTANT: Do not show your working or analysis process. Only provide the final conflict results or "no conflicts" message.
     """
 
-    user_prompt = f"Below is the list of today's scheduled events. Check if there are any time conflicts among them. \n\nEvents:" + '\n\n'.join(events_list)
+    user_prompt = f"""Analyze these events and check ONLY for overlapping times. 
+
+    IMPORTANT: Events like "3:00 PM - 4:00 PM" and "5:30 PM - 6:30 PM" are NOT conflicts because they happen at different times.
+
+    Events:
+    """ + '\n\n'.join(events_list)
     
 
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
     response = client.chat.completions.create(
-        model="mistral-saba-24b",
+        model="llama-3.3-70b-versatile",
         messages=[
             {"role" : "system", "content" : system_prompt},
             {"role" : "user", "content" : user_prompt}
-        ]
+        ],
+        temperature=0.1
     )
 
     return response.choices[0].message.content
