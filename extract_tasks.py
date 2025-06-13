@@ -7,7 +7,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-def get_google_tasks(state):
+def get_google_tasks():
     SCOPES = ["https://www.googleapis.com/auth/tasks"]
     creds = None
 
@@ -47,10 +47,8 @@ def get_google_tasks(state):
                     }
                     all_tasks.append(task_info)
 
-        state["todays_tasks"] = all_tasks
-        return state
+        return all_tasks
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        state["todays_tasks"] = []
-        return state
+        return []

@@ -7,7 +7,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-def get_google_calendar_events(state):
+def get_google_calendar_events():
     
     today = datetime.datetime.utcnow().date()
     time_max = datetime.datetime.combine(today, datetime.time(23,59,59))
@@ -70,10 +70,8 @@ def get_google_calendar_events(state):
             }
             formatted_events.append(formatted_event)
 
-        state["todays_events"] = formatted_events
-        return state
+        return formatted_events
 
     except Exception as e:
         print(f"An error occured: {e}")
-        state["todays_events"] = []
-        return state
+        return []

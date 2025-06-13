@@ -1,16 +1,22 @@
 import os 
 from groq import Groq
 from dotenv import load_dotenv
+from extract_events import get_google_calendar_events
+from extract_tasks import get_google_tasks
+import streamlit as st
 
 load_dotenv()
 
-def plan_the_day(state):
+def plan_the_day():
     combined_list = []
 
-    for event in state["todays_events"]:
+    events = get_google_calendar_events()
+    tasks = get_google_tasks()
+
+    for event in events:
         combined_list.append(f"Title : {event['title']}\nStart Time : {event['start_time']}\nEnd Time : {event['end_time']}\nDescription : {event['description']}")
     
-    for task in state["todays_tasks"]:
+    for task in tasks:
         combined_list.append(f"Title : {task['title']}\nStatus : {task['status']}\nDue Time : {task['due']}\nNotes : {task['notes']}")
 
     client = Groq(
@@ -77,9 +83,8 @@ def plan_the_day(state):
         ]
     )
 
-    state["day_plan"] = response.choices[0].message.content 
+    st.write(response.choices[0].message.content) 
 
-    return state
 
         
            

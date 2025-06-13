@@ -1,10 +1,12 @@
 import os
 from groq import Groq 
 from dotenv import load_dotenv
+from extract_events import get_google_calendar_events
+from extract_tasks import get_google_tasks
 
-def classify_priorities(state):
-    events = state["todays_events"]
-    tasks = state["todays_tasks"]
+def classify_priorities():
+    events = get_google_calendar_events()
+    tasks = get_google_tasks()
 
     combined_list = []
 
@@ -48,7 +50,5 @@ def classify_priorities(state):
         ]
     )
 
-    state["priorities_classification"] = response.choices[0].message.content 
-
-    return state
+    return response.choices[0].message.content
 

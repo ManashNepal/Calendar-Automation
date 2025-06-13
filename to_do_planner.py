@@ -1,13 +1,17 @@
 from groq import Groq
 import os
 from dotenv import load_dotenv 
+import streamlit as st
+from extract_tasks import get_google_tasks
 
 load_dotenv()
 
-def generate_to_do(state):
+def generate_to_do():
     combined_list = []
 
-    for task in state["todays_tasks"]:
+    tasks = get_google_tasks()
+
+    for task in tasks:
         combined_list.append(f"Title : {task['title']}\nStatus : {task['status']}\nDue Time : {task['due']}\nNotes : {task['notes']}")
 
     system_prompt = """
@@ -53,6 +57,4 @@ def generate_to_do(state):
         ]
     )
 
-    state["to_do"] = response.choices[0].message.content 
-
-    return state
+    st.write(response.choices[0].message.content) 

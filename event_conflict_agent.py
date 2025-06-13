@@ -1,9 +1,13 @@
 from groq import Groq 
 import os 
 from dotenv import load_dotenv 
+from extract_events import get_google_calendar_events
+import streamlit as st
 
-def assess_conflict(state):
-    events = state["todays_events"]
+load_dotenv()
+
+def assess_conflict():
+    events = get_google_calendar_events()
 
     events_list = []
 
@@ -63,6 +67,4 @@ def assess_conflict(state):
         ]
     )
 
-    state["conflict_assessment"] = response.choices[0].message.content 
-
-    return state 
+    return response.choices[0].message.content
