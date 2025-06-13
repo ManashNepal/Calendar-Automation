@@ -46,11 +46,12 @@ def send_birthday_mail():
     )
 
     system_prompt2 = """
-    You are a helpful assistant that detects birthday events and responds with a short message: "It's [Name]'s Birthday!" using the given event string.
+    You are a helpful assistant that detects birthday events and responds with a short message.
 
-    - Only respond in the format: It's [Name]'s Birthday!
-    - Do not add any extra information.
-    - Extract only the name that appears before the word "Birthday".
+    - If the event string contains a birthday, respond only in the format: "It's [Name]'s Birthday!"
+    - Extract only the name that appears immediately before the word "Birthday".
+    - If there is no birthday mentioned in the event string, respond with: "No Birthday"
+    - Do not add any extra information or explanation.
     """
 
     # respond It's [Name] Birthday
@@ -62,28 +63,33 @@ def send_birthday_mail():
         ]
     )
 
-    # respond generated email
-    generated_email = response.choices[0].message.content
+    birthday_message = response2.choices[0].message.content
 
-    email_subject = parse_subject(generated_email)
-    email_body = parse_body(generated_email)
+    if "No Birthday" in birthday_message:
+        st.subheader("Noone has Birthday today!")
 
-    st.write(response2.choices[0].message.content)
+    else:
+        st.write(birthday_message)
+        # respond generated email
+        generated_email = response.choices[0].message.content
 
-    st.write("Do you want to send the birthday mail?")
-    
-    if st.button("Yes", key="yes_button"):
-        st.session_state.show_mail_editor = True 
-    
-    if "show_mail_editor" not in st.session_state:
-        st.session_state.show_mail_editor = False 
-    
-    if st.session_state.show_mail_editor:
-        st.session_state.mail = st.text_area(label= "Make changes if you have to!",value=email_body, height = 500)
-        receiver_mail = st.text_input("Enter receiver email address")
-        if st.button(label="SEND", key="send_button"):
-            with st.spinner("Sending"):
-                yag = yagmail.SMTP(user = os.getenv("SENDER_EMAIL"), password=os.getenv("APP_PASSWORD"))
-                yag.send(to=receiver_mail, subject=email_subject, contents=email_body)
-                st.success("Email Sent Successfully!")
-    st.session_state.show_mail_editor = False
+        email_subject = parse_subject(generated_email)
+        email_body = parse_body(generated_email)
+
+        st.write("Do you want to send the birthday mail?")
+        
+        if st.button("Yes", key="yes_button"):
+            st.session_state.show_mail_editor = True 
+        
+        if "show_mail_editor" not in st.session_state:
+            st.session_state.show_mail_editor = False 
+        
+        if st.session_state.show_mail_editor:
+            st.session_state.mail = st.text_area(label= "Make changes if you have to!",value=email_body, height = 500)
+            receiver_mail = st.text_input("Enter receiver email address")
+            if st.button(label="SEND", key="send_button"):
+                with st.spinner("Sending"):
+                    yag = yagmail.SMTP(user = os.getenv("SENDER_EMAIL"), password=os.getenv("APP_PASSWORD"))
+                    yag.send(to=receiver_mail, subject=email_subject, contents=email_body)
+                    st.success("Email Sent Successfully!")
+        st.session_state.show_mail_editor = False
